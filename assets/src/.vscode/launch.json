@@ -12,7 +12,7 @@
             "localRoot": "${workspaceRoot}",
             "commandLine": "-workdir ${workspaceRoot}/../../simulator/win32/ -file src/main.lua",
             "port": 7003,
-            "exePath": "${workspaceRoot}/../../simulator/win32/ddz.exe",
+            "exePath": "${workspaceRoot}/../../simulator/win32/mdzzCode.exe",
             "printType": 1
         },
         {

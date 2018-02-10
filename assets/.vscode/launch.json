@@ -10,7 +10,7 @@
             "localRoot": "${workspaceRoot}",
             "mainFile": "${workspaceRoot}\\main.lua",
             "port": 7003,
-            "exePath": "${workspaceRoot}\\..\\runtime\\win32\\ddz.exe",
+            "exePath": "${workspaceRoot}\\..\\runtime\\win32\\mdzzCode.exe",
             "printType": 1
         },
         {

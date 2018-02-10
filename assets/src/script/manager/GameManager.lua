@@ -72,7 +72,7 @@ end
 function GameManager:loadFiles()
 	-- require "script.util.AnimationUtil"
 	require "script.util.UIUtils"
-	print("GameManager:loadFiles")
+	-- print("GameManager:loadFiles")
 	-- require "script.util.NUtils"
 	-- require "script.util.Log"
 

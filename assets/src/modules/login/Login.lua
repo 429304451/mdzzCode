@@ -24,6 +24,7 @@ function Login:ctor(_, bIsReload)
 	util.delayCall(self,function()
 		self:loadImg()
 		util.init()
+		self:resize()
 	end)
 	-- self:mTest()
 end
@@ -38,6 +39,16 @@ end
 
 function Login:loadImg()
 	self:loadImgFinish()
+end
+function Login:resize()
+	util.aptSelf(self)
+	-- local loading_huojian = Animation:createSpeciallyEffect("csb/effect/loading_huojian", 0, 460, true);
+	-- self.Image_bg:addChild(loading_huojian);
+    -- local loadingbg = Animation:createSpeciallyEffect("csb/effect/loading", 0, 360, true);
+	-- self.Image_bg:addChild(loadingbg);
+    -- loading_huojian:setPosition(WIN_center);
+    -- loadingbg:setPosition(WIN_center);
+	-- self:setPercent(startPos,true)
 end
 
 function Login:loadImgFinish()

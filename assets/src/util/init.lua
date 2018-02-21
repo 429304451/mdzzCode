@@ -25,4 +25,15 @@ Platefrom = require("Common.Platefrom"):create()
 GameSocket = require("Common.GameSocket"):create(MSG_MAP,"gameSocket")
 RoomSocket = require("Common.GameSocket"):create(MSG_ROOM_MAP,"roomSocket")
 TemplateData = require("Common.TemplateData"):create()
--- PlayerData = require("Common.PlayerData"):create()
+PlayerData = require("Common.PlayerData"):create()
+PlayerTaskData = require("Common.PlayerTaskData"):create()
+R = require("Common.R"):create()
+
+ExTimeLable = require("util.ExTimeLable")
+ExTimeLoadBar = require("util.ExTimeLoadBar")
+
+Alert = require("Common.Alert"):create()
+Animation = require("Common.Animation"):create()
+downLoadModule = require("Common.downLoadModule")
+
+_gm:init()

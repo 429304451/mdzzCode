@@ -217,58 +217,59 @@ function Login:onAddSuccessLogin( res )
 end
 --登录大厅成功
 function Login:onLoginSucc(res)
-	if true then
-		mlog("登录大厅成功")
-		return
+	-- if true then
+	-- 	mlog("登录大厅成功")
+	-- 	return
+	-- end
+	PlayerData:setPlayerData(res)
+	local tbl =
+	{
+		iUserID = PlayerData:getUserID(),
+	}
+	print("onLoginSucc", tbl.iUserID)
+	GameSocket:sendMsg(MDM_GP_BATTLE_MSG,ASS_GP_BATTLE_USER_SIGNUP_INFO_REQ,tbl)
+	if PlayerData:getIsSendSquareRedReq() then
+        GameSocket:sendMsg(MDM_GP_RED,ASS_GP_GET_PIAZZA_RED)
+    end
+    util.addSchedulerFuns(self,function() 
+		GameSocket:sendMsg(MDM_GP_PROP,ASS_PROP_GETUSERPROP)
+	end)
+	util.addSchedulerFuns(self,function() 
+		GameSocket:sendMsg(MDM_GP_RED,ASS_GP_MY_PIAZZA_RED_INFO)
+	end)
+
+	--心跳包
+	traceObj(res)
+    GameSocket:addDataHandler(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD,self,function() 
+        GameSocket:sendMsg(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD)
+    end)
+    RoomSocket:addDataHandler(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD,self,function()
+        RoomSocket:sendMsg(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD)
+    end)
+
+    --25秒不收到消息就判断为掉线
+    GameSocket:addDataHandler(nil,nil,self,function() 
+        self:onGetTick()
+    end)
+    RoomSocket:addDataHandler(nil,nil,self,function()
+        self:onGetTick2()
+    end)
+
+	self._autoLogin = false
+	self:setPercent(100,true)
+	if sdkManager:getSDKType() == SDK_LOGIN_TYPE_WX then--其他平台不做自动登录,不记录账号数据
+		PlayerData:writeUser(PlayerData:getUserName(),PlayerData:getPassWord(true))
 	end
-	-- PlayerData:setPlayerData(res)
-	-- local tbl =
-	-- {
-	-- 	iUserID = PlayerData:getUserID(),
-	-- }
-	-- GameSocket:sendMsg(MDM_GP_BATTLE_MSG,ASS_GP_BATTLE_USER_SIGNUP_INFO_REQ,tbl)
-	-- if PlayerData:getIsSendSquareRedReq() then
- --        GameSocket:sendMsg(MDM_GP_RED,ASS_GP_GET_PIAZZA_RED)
- --    end
- --    util.addSchedulerFuns(self,function() 
-	-- 	GameSocket:sendMsg(MDM_GP_PROP,ASS_PROP_GETUSERPROP)
-	-- end)
-	-- util.addSchedulerFuns(self,function() 
-	-- 	GameSocket:sendMsg(MDM_GP_RED,ASS_GP_MY_PIAZZA_RED_INFO)
-	-- end)
+	PlayerData:setAutoLogin(true)
+	PlayerData:setServerDiff(res.tmServer - util.time())
+	if string.len(res.szHeadWeb)>5 then
+		PlayerData:setWXHeadIcon(res.szHeadWeb)
+	end
 
-	-- --心跳包
-	-- traceObj(res)
- --    GameSocket:addDataHandler(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD,self,function() 
- --        GameSocket:sendMsg(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD)
- --    end)
- --    RoomSocket:addDataHandler(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD,self,function()
- --        RoomSocket:sendMsg(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD)
- --    end)
+	util.changeUI(ui.SelectGame)
 
- --    --25秒不收到消息就判断为掉线
- --    GameSocket:addDataHandler(nil,nil,self,function() 
- --        self:onGetTick()
- --    end)
- --    RoomSocket:addDataHandler(nil,nil,self,function()
- --        self:onGetTick2()
- --    end)
-
-	-- self._autoLogin = false
-	-- self:setPercent(100,true)
-	-- if sdkManager:getSDKType() == SDK_LOGIN_TYPE_WX then--其他平台不做自动登录,不记录账号数据
-	-- 	PlayerData:writeUser(PlayerData:getUserName(),PlayerData:getPassWord(true))
-	-- end
-	-- PlayerData:setAutoLogin(true)
-	-- PlayerData:setServerDiff(res.tmServer - util.time())
-	-- if string.len(res.szHeadWeb)>5 then
-	-- 	PlayerData:setWXHeadIcon(res.szHeadWeb)
-	-- end
-
-	-- util.changeUI(ui.SelectGame)
-
- --    sdkManager:initPromotionUrl()
-	-- self:setVisible(false)
+    sdkManager:initPromotionUrl()
+	self:setVisible(false)
 
 	-- GameSocket:addReconnetCallback(self,handler(self,self.reLogin))
 	
@@ -279,6 +280,43 @@ function Login:onLoginSucc(res)
 	-- end
 
 	-- self:getModuleVers()
+end
+
+local tick = 0
+--心跳包判断
+function Login:onGetTick()
+	tick = tick + 1
+	local ticknow = tick
+	--traceOnly("onGetTick",ticknow)
+	GameSocket:setIsChecking(false)
+	util.removeAllSchedulerFuns(self.pnl_bg)
+	util.delayCall(self.pnl_bg,function()
+		--traceOnly(util.time(),"GameSocket断了",ticknow)
+		GameSocket:sendMsg(MDM_SOCKET_CONNECT_CHECK,ASS_SOCKET_CONNECT_CHECK)--(MDM_SOCKET_HEARD,ASS_SOCKET_HEARD)
+		util.delayCall(self.pnl_bg,function()
+			GameSocket:setIsChecking(true)
+			GameSocket:checkConnect("大厅心跳断了",PlayerData:getIsGame())--RoomSocket:isconnect())
+		end,3)
+	end,PlayerData:getIsGame() and 40 or 22,true)
+end
+
+function Login:onGetTick2()
+	tick = tick + 1
+	local ticknow = tick
+	--traceOnly("onGetTick2",ticknow)
+	RoomSocket:setIsChecking(false)
+	util.removeAllSchedulerFuns(self.Image_bg)
+	util.delayCall(self.Image_bg,function()
+		--traceOnly(util.time(),"RoomSocket断了",ticknow)
+		RoomSocket:sendMsg(MDM_SOCKET_HEARD,4)
+		util.delayCall(self.Image_bg,function()
+			RoomSocket:setIsChecking(true)
+			if RoomSocket:checkConnect("房间心跳断了") then
+				util.removeAllSchedulerFuns(self.Image_bg)
+				return
+			end
+		end,3)
+	end,22,true)
 end
 
 function Login:onLoginError(res,uAssistantID,stateType, head)

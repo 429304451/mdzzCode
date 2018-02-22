@@ -33,6 +33,7 @@ function Login:ctor(_, bIsReload)
 		PlayerData:getUsers()
 		self:addEvents()
 		self:checkServer()
+		require("modules.login.hideModule"):create()
 	end)
 	-- self:mTest()
 end
@@ -299,6 +300,28 @@ end
 function Login:checkUpdate(localVer)
 	GameSocket:disconnect()
 	util.changeUI(ui.update,{ver = localVer,func = handler(self,self.onUpdatePercent)})
+end
+
+--更新进度
+function Login:onUpdatePercent(pos,action)
+	if pos == 100 then
+		self:setPercent(pos)
+		GameSocket:connect(self._ip,self._port,handler(self,self.onConnectServer))
+	else
+		local start = startPos
+		local endpos = 99
+
+		pos = start + (endpos - start)*pos/100
+		self:setPercent(pos,action)
+	end
+end
+
+function Login:onConnectServer()
+	self._connected = true
+	trace("连上游戏服务器")
+	if self._loadImged then
+		self:checkAutoLogin()
+	end
 end
 
 function Login:onSwitchAccount()

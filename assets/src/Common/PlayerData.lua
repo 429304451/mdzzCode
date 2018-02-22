@@ -868,6 +868,12 @@ function PlayerData:getUsers()
             end
         end
     end
+    print("getUsers 这里是获取我本地有没有记录之前的用户名密码")
+    if (self._usersDatas[1]) then
+        for k,v in pairs(self._usersDatas[1]) do
+            print(k,v)
+        end
+    end
 
     return self._usersDatas
 end

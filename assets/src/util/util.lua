@@ -778,7 +778,7 @@ function util.aptSelf(node,oldlayoutWidth,oldlayoutHeight)
 		local scale = math.min(scaleX,scaleY)
 		local cx = node:getScaleX()*scale
 		local cy = node:getScaleY()*scale
-
+		-- print("setScaleX", cx, "setScaleY", cy)
 		node:setScaleX(cx)
 		node:setScaleY(cy)
 	end
@@ -819,6 +819,7 @@ function util.aptSelf(node,oldlayoutWidth,oldlayoutHeight)
 			local size = child:getContentSize()
 			size.height = size.height*scaleY
 			size.width = size.width*scaleX
+			-- print("setContentSize", scaleX, scaleY)
 			child:setContentSize(size)
 			util.aptSelf(child,layouWidth,layoutHeight)
 	   end

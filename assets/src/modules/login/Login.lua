@@ -35,7 +35,28 @@ function Login:ctor(_, bIsReload)
 		self:checkServer()
 		require("modules.login.hideModule"):create()
 	end)
+
+	util.delayCall(self,function()
+		local userData = PlayerData:getUsers()
+		for i,info in pairs(userData) do
+			local name = info.name
+			local pw = info.password
+			local showText = name
+			if name ~= PlayerData:getdefUserName() and not self:isWxAccount(name) then
+				self.Image_1:setVisible(false)
+				break
+			end
+		end
+	end)
 	-- self:mTest()
+end
+
+function Login:isWxAccount(name)
+	return name and (string.sub(name,1,3) == "wx_")
+end
+
+function Login:onHideChild()
+	self:initLoginBtns()
 end
 
 --服务器是否维护
@@ -167,10 +188,12 @@ function Login:onEscKeyPressed()
 		sdkManager:exitGame()
 	end
 end
+
 function Login:onUpdateVersion(info)
 	local ver = info.data
 	self.Text_Version:setString("版本号:"..ver)
 end
+
 function Login:LoginByName()
 	--账号登录
 	local info = {

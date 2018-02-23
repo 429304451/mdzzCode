@@ -69,13 +69,12 @@ function GameManager:fun_calInv()
 end
 
 function GameManager:loadFiles()
-	-- require "script.util.AnimationUtil"
+	require "script.util.AnimationUtil"
 	require "script.util.UIUtils"
-	-- print("GameManager:loadFiles")
-	-- require "script.util.NUtils"
+	require "script.util.NUtils"
 	-- require "script.util.Log"
 
-	-- require "script.base.BaseNode"
+	require "script.base.BaseNode"
 	require "script.base.BaseLayer"
 	-- require "script.base.BaseContainer"
 	-- require "script.base.BaseDialog"

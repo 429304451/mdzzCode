@@ -19,7 +19,6 @@ _gm.ID_Warn  = 9
 _gm.ID_Debug = 10
 
 function GameManager:init()
-	print("GameManager:init")
 	--适配参数计算
 	self:fun_calInv()
 	--注册文件
@@ -77,7 +76,7 @@ function GameManager:loadFiles()
 	-- require "script.util.Log"
 
 	-- require "script.base.BaseNode"
-	-- require "script.base.BaseLayer"
+	require "script.base.BaseLayer"
 	-- require "script.base.BaseContainer"
 	-- require "script.base.BaseDialog"
 	-- require "script.base.BaseNetHandle"

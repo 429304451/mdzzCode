@@ -11,10 +11,12 @@ end
 
 
 function PlayerData:getVersion()
+    print("getVersion")
     return self.version or ""
 end
 
 function PlayerData:setVersion(ver)
+    print("setVersion", ver)
     if self.version == ver then
         return
     end
@@ -455,7 +457,11 @@ end
 --现在这里传客户端版本号
 function PlayerData:getRoomVer()
     local ver = self:getVersion() or 0
+    if type(ver) == "string" then
+        return 1000
+    end
     return ver*1000--1
+    -- return 1000
 end
 
 function PlayerData:getLogonType()

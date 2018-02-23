@@ -22,9 +22,9 @@ function Login:ctor(_, bIsReload)
 	self._autoLogin = sdkManager:isAndroidOffic() or sdkManager:is_IOS_offic() or sdkManager:isTryPackage()
 
 	util.delayCall(self,function()
-		self:loadImg()
 		util.init()
-		-- 
+		self:loadImg()
+		
 		self:resize()
 		sdkManager:saveBindDatas()
 
@@ -36,18 +36,18 @@ function Login:ctor(_, bIsReload)
 		require("modules.login.hideModule"):create()
 	end)
 
-	util.delayCall(self,function()
-		local userData = PlayerData:getUsers()
-		for i,info in pairs(userData) do
-			local name = info.name
-			local pw = info.password
-			local showText = name
-			if name ~= PlayerData:getdefUserName() and not self:isWxAccount(name) then
-				self.Image_1:setVisible(false)
-				break
-			end
-		end
-	end)
+	-- util.delayCall(self,function()
+	-- 	local userData = PlayerData:getUsers()
+	-- 	for i,info in pairs(userData) do
+	-- 		local name = info.name
+	-- 		local pw = info.password
+	-- 		local showText = name
+	-- 		if name ~= PlayerData:getdefUserName() and not self:isWxAccount(name) then
+	-- 			self.Image_1:setVisible(false)
+	-- 			break
+	-- 		end
+	-- 	end
+	-- end)
 	-- self:mTest()
 end
 
@@ -218,7 +218,7 @@ end
 --登录大厅成功
 function Login:onLoginSucc(res)
 	-- if true then
-	-- 	mlog("登录大厅成功")
+		mlog("登录大厅成功")
 	-- 	return
 	-- end
 	PlayerData:setPlayerData(res)
@@ -440,6 +440,7 @@ end
 
 
 function Login:getLocalVersion()
+	print("Login:getLocalVersion")
 	local function getVersionData(version)
 		if not version then
 			return 0,0
@@ -470,7 +471,7 @@ function Login:getLocalVersion()
 	if isVerSmaller(ver,ver2) then
 		ver = ver2
 	end
-
+	print("Login:getLocalVersion")
 	PlayerData:setVersion(ver)
 	self.Text_Version:setString("版本号:" .. ver)
 end

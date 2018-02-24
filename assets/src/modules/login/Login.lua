@@ -48,7 +48,6 @@ function Login:ctor(_, bIsReload)
 	-- 		end
 	-- 	end
 	-- end)
-	-- self:mTest()
 end
 
 function Login:isWxAccount(name)
@@ -58,9 +57,25 @@ end
 function Login:onHideChild()
 	self:initLoginBtns()
 end
+function Login:mTest()
+	local data = [[local data = {
+		serverstatus = 0,
+		statustip1 = "服务器正在维护,预计11:00开放,请稍后登录。。。",
+		statustip2 = "服务器计划11：00开始例行维护,维护时长1小时,请合理安排好游戏时间",
+	}
+	return data]]
+	data = data and loadstring(data)()
+	print("-------------------------------------------")
+	print(data)
+	for k,v in pairs(data) do
+		print(k,v)
+	end
+	print("-------------------------------------------")
+end
 
 --服务器是否维护
 function Login:checkServer()
+	-- self:mTest()
 	local url = "http://weihuServer.ddz.com/weihu.txt"
 	util.get(url,function(suc,data)
 		if suc then
@@ -514,13 +529,6 @@ function Login:setPercent(pos,action)
 		return
 	end
 	setPercent(pos)
-end
-
-function Login:mTest()
-	-- body
-	local obj = {1,2,3,4,5, me = {44}}
-	local me = File.serialize(obj)
-	print("me------", me)
 end
 
 

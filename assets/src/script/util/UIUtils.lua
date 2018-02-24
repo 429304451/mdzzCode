@@ -117,6 +117,7 @@ function ui.setNodeMap(node, tbl)
 	end
 	for i=1, childCount do
 		if "table" == type(children) then
+			-- print(children[i]:getName())
 			tbl[children[i]:getName()] = children[i]
 			ui.setNodeMap(children[i], tbl)
 		end

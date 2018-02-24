@@ -1,5 +1,5 @@
 
-
+local GroundNode = require("modules.hall.GroundNode")
 
 
 local SelectGame = class("SelectGame",BaseLayer)
@@ -17,10 +17,14 @@ function SelectGame:ctor(data)
 	self.csBgNode:setScale(_gm.bgScaleW,1)
 	self.csBgNode:setPosition(WIN_center)
 
- --    local ani = Animation:createSpeciallyEffect("csb/effect/07lizi", 0, 162, true)
- --    self.csBgNode:addChild(ani)
+	ui.setNodeMap(self.csBgNode, self)
 
-	-- ui.setNodeMap(self.csBgNode, self)
+	--主界面选场节点
+	self.groundNode = GroundNode.new()
+	self.groundNode:setPosition(WIN_center)
+	self.groundNode:setScale(_gm.bgScaleW2)
+	self:addChild(self.groundNode)
+	-- self.groundNode:initListItems()
 end
 
 

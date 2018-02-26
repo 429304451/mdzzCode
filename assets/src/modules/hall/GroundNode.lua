@@ -3,6 +3,7 @@ local gameId_cofig = require("Common.gameID")
 local crazyRoomInfo = require("config.template.CrazyTen")
 --local roomSort = {gameId_cofig.GRABRED_LOARDS,gameId_cofig.CONTEST_POKER,gameId_cofig.Friend_POKER,gameId_cofig.ACTIVITY}
 --local roomSort = {gameId_cofig.GRABRED_LOARDS,gameId_cofig.BAIREN,gameId_cofig.KANPAI,gameId_cofig.SHUIGUO}
+-- 红包场斗地主 看牌抢庄 疯狂双十 二人斗地主 二人麻将 一看就是更多玩法
 local roomSort = {gameId_cofig.GRABRED_LOARDS,gameId_cofig.KANPAI,gameId_cofig.HUANLEBIPAI,gameId_cofig.TWOAGAINST_DDZ,gameId_cofig.TWOMAHJONG_GAME,gameId_cofig.ACTIVITY}
 -- local roomSort = {gameId_cofig.GRABRED_LOARDS,gameId_cofig.KANPAI,gameId_cofig.HUANLEBIPAI,gameId_cofig.TWOAGAINST_DDZ,gameId_cofig.TWOMAHJONG_GAME,gameId_cofig.ACTIVITY}
 
@@ -256,9 +257,6 @@ function GroundNode:onSelectGameType(gameId)
 	if self:getParent()._gameId == gameId  then
 		return false
 	end
-	--[[if self:getParent()._gameId~=gameId_cofig.MAIN and gameId~=gameId_cofig.MAIN then
-		return false
-	end]]
 	if self._selecTypeting then
 		return false
 	end
@@ -275,7 +273,6 @@ function GroundNode:onSelectGameType(gameId)
 	self:getParent():showInfo(gameId == gameId_cofig.MAIN)
 	self:getParent():showBottomNode(gameId == gameId_cofig.MAIN)
 	self:getParent():showStartGameBtn(gameId ~= gameId_cofig.GRABRED_LOARDS and gameId ~= gameId_cofig.CRAZY_FRIEND_GAME and gameId ~= gameId_cofig.Friend_POKER and gameId ~= gameId_cofig.MAIN)
-	--self.btn_jlsm:setVisible(gameId_cofig.HAPPY_POKER == gameId)
 
 	self:updateList(gameId)
 	return true

@@ -87,21 +87,17 @@ local function main()
 	collectgarbage("collect")
 	collectgarbage("setpause", 100)
 	collectgarbage("setstepmul", 5000)
+	-- setDesignResolution(CC_DESIGN_RESOLUTION, framesize)
 	reloadGame()
 end
 
--- local function main()
--- 	require("util.init")
---     require("app.MyApp"):create():run()
--- end
-
 -- ## Debug 篇
---[[
+-- [[
 -- 是否使用断点调试 （高性能消耗，版本发布必须关闭。）
-local USE_BREAKPOINT_DEBUG = false
+local USE_BREAKPOINT_DEBUG = true
 
 local cclog = function(...)
-	trace(string.format(...))
+	print(string.format(...))
 end
 
 local breakInfoFun , xpCallFun
@@ -129,16 +125,17 @@ function __G__TRACKBACK__(msg)
 	if not postedLog[msg] then
 		postedLog[msg] = true
 		debuglog = tostring(msg)..debuglog
-		-- util.postLogToServer(debuglog)  目前我还没有写util 
+		util.postLogToServer(debuglog)  --目前我还没有写util 
 	end
 
 	trace = function() end
 	traceObj = function() end
 	return msg
 end
-]]
+--]]
 
 local status, msg = xpcall(main, __G__TRACKBACK__)
 if not status then
-    print(msg)
+    -- print(msg)
+    trace(msg)
 end

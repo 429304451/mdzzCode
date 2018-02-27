@@ -12,8 +12,8 @@ function util:isExamine()--是否是审核包（审核包需要屏蔽相关模�
 end
 --当前使用的域名
 function util.curDomainName()
-    --return "ddz.com"
-    return "36y.com"
+    return "ddz.com"
+    -- return "36y.com"
 end
 
 function util.exit()

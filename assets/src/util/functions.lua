@@ -81,6 +81,7 @@ function string.split(s, sep)
 end
 
 function handler(obj, method)
+    assert(method ~= nil, "xxxxxxxxxxxxx")
     return function(...)
         return method(obj, ...)
     end
@@ -578,15 +579,16 @@ function traceObj(value, desciption, nesting, filterString)
     _dump(value, desciption, "- ", 1)
 
     for i, line in ipairs(result) do
-        trace(line)
+        -- trace(line)
+        print(line)
     end
 end
 
 function traceObjOnly(...)
    oldtraceObj = oldtraceObj or traceObj
    oldtraceObj(...)
-    traceObj = function ()
-    end
+    -- traceObj = function ()
+    -- end
 end
 -------------
 --监听tab元素添加,(只有第一次添加有效)

@@ -1,6 +1,7 @@
 
--- local gameId_cofig = require("Common.gameID")
+local gameId_cofig = require("Common.gameID")
 local GroundNode = require("modules.hall.GroundNode")
+local crazyRoomInfo = require("config.template.CrazyTen")
 local game_level_kind = 4
 
 local SelectGame = class("SelectGame",BaseLayer)
@@ -101,7 +102,7 @@ function SelectGame:onBtnClick(pSender, type)
 		mlog(pSender.tag)
 
 		if pSender.tag == "btn_startGame" then
-			-- self:onStartGame(_,true)
+			self:onStartGame(_,true)
 			-- mlog("快速开始")
 		elseif pSender.tag == "btn_shangcheng" then
 			-- _uim:showLayer(ui.shop)
@@ -292,11 +293,10 @@ function SelectGame:addEvents()
 	GameSocket:addDataHandler(MDM_GP_MAQ_MSG,ASS_GP_MAQ_MSG_NOTIFY,self,self.onServerInfo)
 	GameSocket:addDataHandler(MDM_GP_ACTIVE,ASS_ACTIVELIST,self,self.onActiveList)
 	--切换到主界面
-	print("gameId_cofig wocaoocaocaocoaocao")
 	-- self:wocoaocaocaoco()
 	-- mlog("gameId_cofig.MAIN wwwwwwwwwwww", gameId_cofig.MAIN)
 	-- print("gameId_cofig.MAIN", gameId_cofig.MAIN)
-	-- self:onSelectGameType(gameId_cofig.MAIN)
+	self:onSelectGameType(gameId_cofig.MAIN)
 	--异步创建二级界面图标
 	-- self.groundNode:initListItems()
 
@@ -316,6 +316,205 @@ function SelectGame:addEvents()
  --    end
 	
 	-- self:initWebData()
+end
+
+--切回一级界面 细节相关
+function SelectGame:onBackHall()
+	if self._iCurGameId == gameId_cofig.CRAZY_FRIEND_GAME then
+		self:onSelectGameType(gameId_cofig.HUANLEBIPAI)
+	else
+		if self:onSelectGameType() then
+			self.pnl_hall_frame_bottom:setVisible(true)
+			self:showInfo(true)
+		end
+	end
+end
+
+--快速开始按钮切换动画
+function SelectGame:showStartGameBtn(bShow)
+    self.btn_startGame:setVisible(bShow)
+	local hidePosY = -323
+	local showPosY = 0
+	local x = 0
+	local nowPosY = self.btn_startGame:getPositionY()
+	local tragetPos = cc.p(x,bShow and showPosY or hidePosY)
+	self.btn_startGame:stopAllActions()
+	if tragetPos.y == nowPosY and nowPosY ~= hidePosY then
+		self.btn_startGame:runAction(cc.Sequence:create(cc.MoveTo:create(0.2,cc.p(x,hidePosY)),cc.MoveTo:create(0.2,cc.p(x,showPosY))) )
+	else
+		self.btn_startGame:runAction(cc.MoveTo:create(0.4,tragetPos))
+	end
+end
+
+--显示底部节点
+function SelectGame:showBottomNode(bShow)
+	local pos = cc.p(0,bShow and 0 or -150)
+	self.img_hall_frame_bottom:stopAllActions()
+	local move = cc.MoveTo:create(0.2,pos)
+	local easeSine
+	if bShow then
+		easeSine = cc.EaseSineOut:create(move)
+	else
+		easeSine = cc.EaseSineIn:create(move)
+	end
+	self.img_hall_frame_bottom:runAction(easeSine)
+end
+
+--头像和返回按钮切换
+function SelectGame:showInfo(bShow)
+	local nodeList = {self.btn_my_info,self.btn_hall_back}
+	local scale = cc.ScaleTo:create(0.2,0.5)
+	local easeSine = cc.EaseSineIn:create(scale)
+	local fade = cc.FadeTo:create(0.2,0)
+	local spawn = cc.Spawn:create(easeSine,fade)
+	local function cFun()
+		nodeList[not bShow and 1 or 2]:setVisible(false)
+		local scale1 = cc.ScaleTo:create(0.2,1)
+		local easeBack1 = cc.EaseBackOut:create(scale1)
+		local fade1 = cc.FadeTo:create(0.2,255)
+		local spawn1 = cc.Spawn:create(easeBack1,fade1)
+		nodeList[bShow and 1 or 2]:setVisible(true)
+		nodeList[bShow and 1 or 2]:runAction(spawn1)
+	end
+	local callFun = cc.CallFunc:create(cFun)
+	local sequence = cc.Sequence:create(spawn,callFun)
+	nodeList[not bShow and 1 or 2]:runAction(sequence)
+end
+
+--游戏断线重连
+function SelectGame:goBackToLastRoom()
+	if PlayerData:getPlayerInfo().iCutRoomID > 0 and PlayerData:getPlayerInfo().iCurGameNameID > 0 and PlayerData:getPlayerInfo().iCurGameNameID ~= gameId_cofig.Friend_POKER and PlayerData:getPlayerInfo().iCurGameNameID ~= gameId_cofig.CRAZY_FRIEND_GAME then
+		self._iCurGameId = PlayerData:getPlayerInfo().iCurGameNameID
+		local tbl = 
+		{
+			uRoomID = PlayerData:getPlayerInfo().iCutRoomID
+		}
+		if PlayerData:getPlayerInfo().iCurGameNameID == gameId_cofig.CONTEST_POKER then
+			PlayerData:setCurMatchID(PlayerData:getPlayerInfo().iCurMatchID,2)
+		elseif PlayerData:getPlayerInfo().iCurGameNameID == gameId_cofig.CONTEST_POKERS then
+			PlayerData:setCurMatchID(PlayerData:getPlayerInfo().iCurMatchID,1)
+			self._bIsGameRoom = true
+		end
+		if PlayerData:getPlayerInfo().iCurGameNameID == gameId_cofig.GRABRED_LOARDS then
+			PlayerData:setCurRoomInfo({uNameID=PlayerData:getPlayerInfo().iCurGameNameID,iRoomLevel=PlayerData:getPlayerInfoAdd().iDDZSignUpLevel,uKindID=1})
+		else
+			PlayerData:setCurRoomInfo({uNameID=PlayerData:getPlayerInfo().iCurGameNameID,iRoomLevel=PlayerData:getPlayerInfo().bCurRoomLevel,uKindID=1})
+		end
+		GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM_BY_ID,tbl)
+	end
+end
+
+function SelectGame:updateResurrectionTM( ... )
+	self.groundNode:onSartResurrectTime()
+end
+
+function SelectGame:onUpdateUserCoin( res )
+	traceObj(res)
+	if res.dwUserID == PlayerData:getUserID() then
+		if res.dwMoney then
+			PlayerData:setGold(res.dwMoney)
+		end
+		if res.dwGameCoin then
+			PlayerData:setGameCoin(res.dwGameCoin)
+		end
+		if res.dwTreasure then
+			PlayerData:setTreasure(res.dwTreasure)
+		end
+	end
+end
+
+function SelectGame:onAddSuccessLogin( res )
+	PlayerData:setPlayerInfoAdd(res)
+	if not PlayerData:getIsGame() then
+		self:goBackToLastRoom()
+	end
+end
+
+function SelectGame:onHeadReset()
+	PlayerData:setLogoID(PlayerData:bLogoID())
+end
+
+function SelectGame:onWebFollowWechar( res )
+	PlayerData:ModifyTaskData(MODIFY_FOLLOW_WRCHAR_TASK, 1)
+end
+
+function SelectGame:onKickToHall()
+	local gameid = PlayerData:getPlayerInfo() and PlayerData:getPlayerInfo().iCurGameNameID or "未知"
+	local gameName = tostring(PlayerData:getIsGame())
+	util.postLogToServer("服务器踢出房间,iCurGameNameID = "..gameid..", gameName = "..gameName,true)
+	RoomSocket:disconnect()
+
+    PlayerData:setPlayerRoomData()
+    PlayerData:setIsGame(false)
+	_uim:closeLayer(ui.watchbrand_game)
+	_uim:closeLayer(ui.hundredniuniu_game)
+	util.changeUI(ui.SelectGame)           
+	
+	Alert:showCheckBox2("您已被踢出房间")
+end
+
+function SelectGame:onKick()
+	GameSocket:disconnect()
+	RoomSocket:disconnect()
+
+	Alert:showCheckBox2("该账号已在其他设备登录",util.backToLogin,util.backToLogin)
+end
+
+function SelectGame:onBattleSignUp( res, uAssistantID, stateType, head)
+	if head and head.uHandleCode == 0 then
+		if matchinfoCofig[self._iKey].GoodId1 == 1 and PlayerData:getGold() >= matchinfoCofig[self._iKey].Num1 then
+			PlayerData:setGold(PlayerData:getGold() - matchinfoCofig[self._iKey].Num1)
+		end
+		local tbl = 
+		{
+			uRoomID = res.iRoomID
+		}
+		GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM_BY_ID,tbl)
+		local iMatchInfo = {}
+		iMatchInfo = table.copy(PlayerData:getUserMatchInfo())
+		if iMatchInfo then
+			for k,v in pairsKey(iMatchInfo) do
+				if v.iMatchID == matchinfoCofig[self._iKey].iMatchID then
+					v.bSignUp = true
+					break
+				end
+			end
+			PlayerData:setUserMatchInfo(iMatchInfo)
+		end
+		if matchinfoCofig[self._iKey].TypeKind == 1 then
+			_uim:showLayer(ui.jsswaitpage,self._iKey)
+		end
+	elseif head and (head.uHandleCode == 4 or head.uHandleCode == 9) then
+		self._iCurGameId = gameId_cofig.CONTEST_POKERS
+		local tbl = 
+		{
+			uRoomID = res.iRoomID
+		}
+		PlayerData:setCurMatchID(PlayerData:getPlayerInfo().iCurMatchID,1)
+		self._bIsGameRoom = true
+		PlayerData:setCurRoomInfo({uNameID=gameId_cofig.CONTEST_POKERS,iRoomLevel=1,uKindID=1})
+		GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM_BY_ID,tbl)
+	elseif head and head.uHandleCode == 8 then
+		local roomName = res and res.szRoomName
+		if roomName and roomName~="" then
+			_uim:showLayer(ui.wordstip,"正在"..roomName.."中,不能报名！")
+		end
+	elseif head and head.uHandleCode == 5 then
+		_uim:showLayer(ui.jsswaitpage,self._iKey)
+	end
+end
+
+function SelectGame:onBattleSignUpReq( res )
+	if res then
+		local signupReq = {}
+
+		for i=0,res.iMatchCount-1 do
+			if res.info[i] then
+				table.insert(signupReq, res.info[i])
+			end
+		end
+		PlayerData:setUserMatchInfo(signupReq)
+	end
 end
 
 function SelectGame:showActiveAni( bPositive )
@@ -594,7 +793,7 @@ end
 
 --切换到主界面
 function SelectGame:onSelectGameType(data)
-	-- self.groundNode:onSelectGameType(data)
+	self.groundNode:onSelectGameType(data)
 end
 
 function SelectGame:onBackKeyPressed()
@@ -1102,8 +1301,162 @@ end
 
 --快速开始
 ---1、千人抢红包 2、水果机 3、看牌抢庄 4、百人 5、疯狂双十
-function SelectGame:onStartGame(res, bTouchStart)
-	mlog("SelectGame:onStartGame")
+function SelectGame:onStartGame(res,bTouchStart)
+	local iQuickStartIndex = PlayerData:getQuickStartIndex()
+	--红包
+	if (iQuickStartIndex and iQuickStartIndex == 1 ) or (iQuickStartIndex == nil and self._iCurStartRoom == 1) then
+		local tbl = 
+		{
+			uNameID = gameId_cofig.GRABRED_LOARDS,
+			iRoomLevel = 1
+		}
+		self._iCurGameId = gameId_cofig.GRABRED_LOARDS
+		if bTouchStart then
+			self:onSelectRoom(tbl)
+		else
+			self:onSelectGameType(gameId_cofig.GRABRED_LOARDS)
+		end
+	--水果机
+	elseif (iQuickStartIndex and iQuickStartIndex == 2 ) or (iQuickStartIndex == nil and self._iCurStartRoom == 2) then
+		local downloader = downLoadModule:create(self.groundNode:getGameRoomNodeByGameID(gameId_cofig.SHUIGUO))
+        downloader:downLoadMod(MODULE_FRIUTMAC,function()
+        	local configFruit = TemplateData:getRoom(gameId_cofig.SHUIGUO)
+        	local iFind = false
+        	local roomLevel = -1
+			for i=1,1,-1 do
+				if PlayerData:getGold() >= configFruit[i].gold1 and (PlayerData:getGold() < configFruit[i].gold2 or configFruit[i].gold2 == 0)  then
+					roomLevel = configFruit[i].iRoomLevel
+					iFind = true
+					break
+				end
+			end
+			if not iFind then
+				_uim:showLayer(ui.pochang,{iTargetofGold=configFruit[1].gold1,iTargeType=1})
+			else
+				local tbl = 
+				{
+					uNameID = gameId_cofig.SHUIGUO,
+					iRoomLevel = roomLevel
+				}
+				self._iCurGameId = gameId_cofig.SHUIGUO
+				if bTouchStart then
+					self:onSelectFruits(tbl)
+				else
+					self:onSelectGameType(gameId_cofig.SHUIGUO)
+				end
+			end
+		end)
+	--看牌
+	elseif (iQuickStartIndex and iQuickStartIndex == 3 ) or (not iQuickStartIndex  and self._iCurStartRoom == 3) then
+		local gameId = gameId_cofig.KANPAI
+		local roomLevel = -1
+		local iFind = false
+		for i=3,1,-1 do
+			if PlayerData:getGold() >= bullRoomInfo[i].gold1 and (PlayerData:getGold() < bullRoomInfo[i].gold2 or bullRoomInfo[i].gold2 == 0)  then
+				roomLevel = i
+				iFind = true
+				break
+			end
+		end
+		if not iFind  then
+			_uim:showLayer(ui.pochang,{iTargetofGold=bullRoomInfo[1].gold1,iTargeType=1})
+		else
+			local downloader = downLoadModule:create(self.groundNode:getGameRoomNodeByGameID(gameId))
+	        downloader:downLoadMod(MODULE_KANPAI,function()
+				local tbl = 
+				{
+					uNameID = gameId,
+					iRoomLevel = roomLevel
+				}
+				self._iCurGameId = gameId
+				if bTouchStart then
+					self:onSelectBullRoom(tbl)
+				else
+					self:onSelectGameType(gameId)
+				end
+	        end)
+		end
+	--百人
+    elseif (iQuickStartIndex and iQuickStartIndex == 4 ) or (not iQuickStartIndex  and self._iCurStartRoom == 4) then
+    	local gameId = gameId_cofig.BAIREN
+		local roomLevel = -1
+		local iFind = false
+		local configBiaren = TemplateData:getRoom(gameId)
+		for i=3,1,-1 do
+			if PlayerData:getGold() >= configBiaren[i].gold1 and (PlayerData:getGold() < configBiaren[i].gold2 or configBiaren[i].gold2 == 0)  then
+				roomLevel = configBiaren[i].iRoomLevel
+				iFind = true
+				break
+			end
+		end
+		if not iFind then
+			_uim:showLayer(ui.pochang,{iTargetofGold=configBiaren[1].gold1,iTargeType=1})
+		else
+			local downloader = downLoadModule:create(self.groundNode:getGameRoomNodeByGameID(gameId))
+	        downloader:downLoadMod(MODULE_BAIREN,function()
+				local tbl = 
+				{
+					uNameID = gameId,
+					iRoomLevel = roomLevel
+				}
+				self._iCurGameId = gameId
+				if bTouchStart then
+					self:onSelectBairen(tbl)
+				else
+					self:onSelectGameType(gameId_cofig.BAIREN)
+				end
+	        end)
+		end
+	--双十
+	elseif (iQuickStartIndex and iQuickStartIndex == 5 ) or (not iQuickStartIndex  and self._iCurStartRoom == 5) then
+		mlog("疯狂双十")
+		local gameId = gameId_cofig.HUANLEBIPAI
+		local roomLevel = -1
+		local iFind = false
+		for i=4,2,-1 do
+			if PlayerData:getGold() >= crazyRoomInfo[i].gold1 and (PlayerData:getGold() < crazyRoomInfo[i].gold2 or crazyRoomInfo[i].gold2 == 0)  then
+				roomLevel = i
+				iFind = true
+				break
+			end
+		end
+		print("roomLevel", roomLevel, iFind)
+
+		if not iFind then
+			_uim:showLayer(ui.pochang,{iTargetofGold=crazyRoomInfo[2].gold1,iTargeType=1})
+		else
+			local downloader = downLoadModule:create(self.groundNode:getGameRoomNodeByGameID(gameId))
+	        downloader:downLoadMod(MODULE_CARZY,function()
+				local tbl = 
+				{
+					uNameID = gameId,
+					iRoomLevel = roomLevel
+				}
+				self._iCurGameId = gameId
+				if bTouchStart then
+					self:onSelectCrazyRoom(tbl)
+				else
+					self:onSelectGameType(gameId)
+				end
+	        end)
+		end
+	end
+	PlayerData:setQuickStartIndex(nil)
+end
+
+--疯狂双十点击响应
+function SelectGame:onSelectCrazyRoom( tbl )
+	if PlayerData:getGold() < crazyRoomInfo[tbl.iRoomLevel].gold1 then
+		_uim:showLayer(ui.pochang,{iTargetofGold=crazyRoomInfo[tbl.iRoomLevel].gold1,iTargeType=1})
+	elseif PlayerData:getGold() > crazyRoomInfo[tbl.iRoomLevel].gold2 and crazyRoomInfo[tbl.iRoomLevel].gold2 ~= 0 then
+		_uim:showLayer(ui.wordstip,"金币太多，无法进入当前场次，请重新选择！")
+	elseif PlayerData:isSignMatch() then
+		_uim:showLayer(ui.wordstip,"您当前已报名即时赛，不能进入其他场次！")
+	else
+		tbl.uKindID = 2
+		PlayerData:setCurRoomInfo(tbl)
+		GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM,tbl)
+	end
 end
 
 function SelectGame:resize()

@@ -50,7 +50,7 @@ function LayerManager:showLayer(obj,...)
 	if layer.resize then
 		layer:resize()
 	else
-		--util.aptSelf(layer)
+		util.aptSelf(layer)
 	end
 	if obj.backKeytoClose then
 		local function backClose()

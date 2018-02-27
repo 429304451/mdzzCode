@@ -311,10 +311,16 @@ function GameSocket:onRecMsg(head,body,structName,arg3)
 	end
 
 	local function doHandlers(gHandlers)
-	    if gHandlers then 
-	    	for obj,handler in pairs(gHandlers) do
+		if gHandlers then 
+			-- print("")
+			-- traceObj(gHandlers, "gHandlers")
+			-- print("wowoowowowowowowowowowowowowo")
+			-- traceObj(gHandlers, "MygHandlers")
+	    	for obj,handle in pairs(gHandlers) do
 	    		if not tolua.isnull(obj) or (obj.type and obj.type == "logic") then
-	        		handler(body,uAssistantID,arg3,head)
+					-- print("doHandlers", uAssistantID, body, arg3, head)
+					-- print("handler函数", obj, handler1)
+					handle(body,uAssistantID,arg3,head)
 	        	else
 	        		gHandlers[obj] = nil
 	        	end

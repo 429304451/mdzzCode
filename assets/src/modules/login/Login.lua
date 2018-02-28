@@ -5,8 +5,8 @@ sdkManager = require("Common.sdkManager").create()
 local _GameServerPort = 13026
 local startPos = 0--下载前的进度条
 
-IP_SERVER = "nbserver.36y.com"
--- IP_SERVER = "ninnerbserver.ddz.com"
+-- IP_SERVER = "nbserver.36y.com"
+IP_SERVER = "ninnerbserver.ddz.com"
 local _ipList = {
 	--"ninnerbserver.ddz.com",
 	IP_SERVER,

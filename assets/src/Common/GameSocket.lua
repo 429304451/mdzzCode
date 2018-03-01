@@ -44,7 +44,7 @@ end
 --发送
 --只有当发送的uMainID,uAssistantID 与收到的一致时,才会触发callBack
 function GameSocket:sendMsg(uMainID,uAssistantID,tblBody,callBack)
-	traceOnly("GameSocket:sendMsg",util.time(),self._debugName,"send",uMainID,uAssistantID)
+	-- traceOnly("GameSocket:sendMsg",util.time(),self._debugName,"send",uMainID,uAssistantID)
 	if callBack and type(callBack) == "function" then
 		if self.callBacks[uMainID] and self.callBacks[uMainID][uAssistantID] then
 			--trace(self._debugName,"sendMsg remove old msg callback",uMainID,uAssistantID)

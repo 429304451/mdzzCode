@@ -1,7 +1,10 @@
 
 local gameId_cofig = require("Common.gameID")
-local GroundNode = require("modules.hall.GroundNode")
-local crazyRoomInfo = require("config.template.CrazyTen")
+local ddzRoomInfo = require("config.template.room") -- 斗地主房间配置
+local bullRoomInfo = require("config.template.bullroom") -- 看牌抢庄场次名称
+local crazyRoomInfo = require("config.template.CrazyTen") -- 疯狂双十房间配置
+local matchinfoCofig = require("config.competition") -- 及时竞赛类型
+local GroundNode = require("modules.hall.GroundNode") -- 六个选项按钮
 local game_level_kind = 4
 
 local SelectGame = class("SelectGame",BaseLayer)
@@ -316,6 +319,57 @@ function SelectGame:addEvents()
  --    end
 	
 	-- self:initWebData()
+end
+
+function SelectGame:getGrabreRoomInfo( tbl )
+	local grabredRoomInfo = TemplateData:getRoom(tbl.uNameID)
+	local info = {}
+	for k,v in pairs(grabredRoomInfo) do
+		if v.iRoomLevel == tbl.iRoomLevel then
+			info = v
+			break
+		end
+	end
+	return info
+end
+
+function SelectGame:onSelectRoom(tbl)
+	local iSignDDz = PlayerData:getPlayerInfoAdd() and PlayerData:getPlayerInfoAdd().iDDZSignUpLevel or 255
+	local iTaxMenpiao = 0
+	local info
+	if iSignDDz ~= 255 then
+		info = self:getGrabreRoomInfo({uNameID=tbl.uNameID,iRoomLevel=iSignDDz})
+		iTaxMenpiao = info.registration
+	else
+		info = self:getGrabreRoomInfo(tbl)
+		iTaxMenpiao = 0
+	end
+	if iSignDDz ~= 255 and PlayerData:getPlayerInfoAdd().iDDZSignUpLevel ~= tbl.iRoomLevel then
+		local signTbl = table.copy(tbl)
+		signTbl.iRoomLevel = PlayerData:getPlayerInfoAdd().iDDZSignUpLevel
+		local info1 = self:getGrabreRoomInfo(signTbl)
+		Alert:showCheckBoxQianWang("正在"..info1.name.."中",function() 
+			signTbl.uKindID = 1 --类型ID 休闲
+			PlayerData:setCurRoomInfo(signTbl)
+			self._iCurGameId = gameId_cofig.GRABRED_LOARDS
+			GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM,{uKindID=1,iRoomLevel=1,uNameID=signTbl.uNameID})
+		end)
+	else
+		if PlayerData:getGameCoin() < (info.gold1 - iTaxMenpiao) and tbl.iRoomLevel == 1 then
+			if PlayerData:getForTurnTime() - (PlayerData:getServerTime() - PlayerData:getPlayerInfoAdd().tmResurrectionTM) > 0 then
+				_uim:showLayer(ui.noMenpiaoRevive, {ibResToday = false,iTargeGameCoin=info.gold1})
+			else
+				_uim:showLayer(ui.resurreMole)
+			end
+		elseif  PlayerData:getGameCoin() < (info.gold1 - iTaxMenpiao) and tbl.iRoomLevel > 1 then
+			_uim:showLayer(ui.noMenpiaoRevive, {ibResToday = false,iTargeGameCoin=info.gold1})
+		else
+			tbl.uKindID = 1 --类型ID 休闲
+			PlayerData:setCurRoomInfo(tbl)
+			self._iCurGameId = gameId_cofig.GRABRED_LOARDS
+			GameSocket:sendMsg(MDM_GP_LIST,ASS_GP_GET_ROOM,{uKindID=1,iRoomLevel=1,uNameID=tbl.uNameID})
+		end
+	end
 end
 
 --切回一级界面 细节相关
